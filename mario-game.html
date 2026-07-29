@@ -7,19 +7,25 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
-    height: 100%;
+    min-height: 100%;
     background: #05060f;
     font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
-    overflow: hidden;
+    overflow-x: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     user-select: none;
   }
+  #stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+  }
   #wrap {
     position: relative;
     width: 100%;
-    max-width: 900px;
     aspect-ratio: 16 / 9;
     box-shadow: 0 0 60px rgba(80,120,255,0.35), 0 0 120px rgba(255,60,180,0.2);
     border-radius: 14px;
@@ -79,27 +85,47 @@
   }
   .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(40,60,150,0.6); }
   .hint { margin-top: 22px; font-size: clamp(11px,2.6vw,15px); color:#7d8bc4; line-height:1.9; }
+  .video-btn {
+    display: inline-block; margin-top: 18px; pointer-events: auto;
+    padding: 10px 28px; border-radius: 30px;
+    background: linear-gradient(90deg, #c00, #ff2d5e);
+    color: #fff; text-decoration: none;
+    font-size: clamp(12px, 2.8vw, 16px); font-weight: 800; letter-spacing: 2px;
+    box-shadow: 0 4px 0 rgba(120,0,0,0.5), 0 0 20px rgba(255,60,80,0.4);
+    transition: transform .08s, box-shadow .08s;
+  }
+  .video-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(120,0,0,0.5); }
   .big-result { font-size: clamp(28px,7vw,60px); font-weight:900; }
   .win { color:#7CFFB2; text-shadow:0 0 25px rgba(124,255,178,0.8); }
   .lose { color:#ff6b8a; text-shadow:0 0 25px rgba(255,107,138,0.8); }
 
-  /* モバイル操作 */
-  #touch { position:absolute; inset:0; z-index:8; display:none; pointer-events:none; }
+  /* モバイル操作（ゲーム画面の下に配置） */
+  #touch {
+    display: none;               /* PCでは非表示 */
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .dpad { display: flex; gap: 16px; }
   .tbtn {
-    position:absolute; bottom:20px; pointer-events:auto;
-    width: 74px; height:74px; border-radius:50%;
+    pointer-events: auto;
+    width: 76px; height: 76px; border-radius: 50%;
     background: rgba(120,160,255,0.18);
     border: 2px solid rgba(150,190,255,0.55);
     color:#cfe0ff; font-size:30px; font-weight:900;
     display:flex; align-items:center; justify-content:center;
-    backdrop-filter: blur(3px); touch-action:none;
+    backdrop-filter: blur(3px); touch-action:none; -webkit-user-select:none;
   }
-  .tbtn:active { background: rgba(120,160,255,0.4); }
-  #btnLeft { left:20px; }
-  #btnRight { left:108px; }
-  #btnJump { right:24px; width:92px; height:92px; font-size:24px; bottom:16px;
-    background: rgba(255,120,200,0.2); border-color: rgba(255,150,210,0.6); color:#ffd9ef; }
-  @media (hover:none) and (pointer:coarse) { #touch{display:block;} }
+  .tbtn:active { background: rgba(120,160,255,0.4); transform: scale(0.94); }
+  #btnJump {
+    width: 100px; height: 100px; font-size: 22px;
+    background: rgba(255,120,200,0.2); border-color: rgba(255,150,210,0.6); color:#ffd9ef;
+  }
+  /* タッチ端末のときだけ操作バーを表示 */
+  @media (hover:none) and (pointer:coarse) { #touch{ display:flex; } }
 
   /* 裏技ポップアップ */
   #cheatPop {
@@ -146,6 +172,7 @@
 </style>
 </head>
 <body>
+<div id="stage">
 <div id="wrap">
   <canvas id="game" width="960" height="540"></canvas>
 
@@ -166,6 +193,7 @@
       スマホ: 画面下のボタンで操作<br>
       敵は踏んでやっつけろ ／ ◆コインを集めてゴールを目指せ
     </div>
+    <a href="https://www.youtube.com/watch?v=pRhT6tMlGOI" target="_blank" rel="noopener" class="video-btn">▶ 作り方の動画</a>
   </div>
 
   <!-- クリア / ゲームオーバー -->
@@ -173,13 +201,6 @@
     <div id="endTitle" class="big-result win">CLEAR!</div>
     <div id="endMsg" class="subtitle"></div>
     <button class="btn" id="retryBtn">↻ もう一度</button>
-  </div>
-
-  <!-- モバイル操作 -->
-  <div id="touch">
-    <div class="tbtn" id="btnLeft">◀</div>
-    <div class="tbtn" id="btnRight">▶</div>
-    <div class="tbtn" id="btnJump">JUMP</div>
   </div>
 
   <!-- 裏技呼び出しボタン（U） -->
@@ -198,7 +219,17 @@
       </div>
     </div>
   </div>
-</div>
+</div><!-- /#wrap -->
+
+  <!-- モバイル操作（ゲーム画面の下） -->
+  <div id="touch">
+    <div class="dpad">
+      <div class="tbtn" id="btnLeft">◀</div>
+      <div class="tbtn" id="btnRight">▶</div>
+    </div>
+    <div class="tbtn" id="btnJump">JUMP</div>
+  </div>
+</div><!-- /#stage -->
 
 <script>
 // ---------- サウンド（Web Audio API・外部ファイル不要） ----------
