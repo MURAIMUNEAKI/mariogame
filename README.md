@@ -1,4 +1,4 @@
-# NEON RUNNER（ネオン・ランナー）
+# URAYAMA RUNNER（ウラヤマ・ランナー）
 
 外部ファイル不要の単一HTMLファイルで動作するレトロ風2Dアクションゲーム。Canvas描画、Web Audio APIによるサウンド生成をすべてインラインで実装。
 
